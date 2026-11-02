@@ -146,6 +146,16 @@ tr.det td{background:var(--bg);padding:0 12px 26px;border-bottom:1px solid var(-
 .src{color:var(--muted)}
 .star{border:1px solid var(--line);background:var(--bg);color:var(--muted);font-size:15px;padding:2px 10px;border-radius:3px;cursor:pointer}
 .star[aria-pressed="true"]{border-color:var(--warn);color:var(--warn-ink);background:var(--warn-soft)}
+.calbtn{border:1px solid var(--accent);background:var(--bg);color:var(--accent);font-size:15px;font-weight:600;padding:2px 10px;border-radius:3px;cursor:pointer}
+.calbtn:hover{background:var(--accent-soft)}
+.gcal{font-size:13.5px;font-weight:600;text-decoration:none;margin-left:8px;white-space:nowrap}
+.listbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:14px 16px;margin:4px 0 12px;border:1px solid var(--accent);border-left-width:4px;background:var(--accent-soft);font-size:17px}
+.listbar b{font-weight:600}
+.listbar .lb{border:0;background:#1877f2;color:#fffafa;font-size:15.5px;font-weight:600;padding:6px 14px;border-radius:4px;cursor:pointer}
+.listbar .lb:hover{background:#166fe5}
+.listbar .lb.ghost{background:var(--bg);color:#1877f2;box-shadow:inset 0 0 0 1px #1877f2}
+.listbar input{flex:1 1 260px;min-width:0;font:inherit;font-size:15px;padding:5px 10px;border:1px solid var(--line);border-radius:3px;background:var(--bg);color:var(--ink)}
+.listbar .msg{color:var(--up);font-weight:600}
 .empty td{padding:30px 10px;color:var(--muted)}
 
 /* sections */
@@ -270,6 +280,8 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
     <input type="search" id="q" placeholder="Search name, topic or organiser" aria-label="Search">
     <span class="count" id="count"></span>
   </div>
+
+  <div class="listbar" id="listbar" hidden></div>
 
   <div class="boardwrap">
     <table class="board">
@@ -416,7 +428,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
     return `<span style="color:var(--muted);font-style:italic">${esc(it.expect||"No date set")}</span>`;
   }
   function renderBoard(){
-    let rows=view().filter(i=>S==="all"||(S==="mine"?mine[i.name]:i.group===S));
+    let rows=SV?view().filter(i=>SHARED.has(code(i.name))):view().filter(i=>S==="all"||(S==="mine"?mine[i.name]:i.group===S));
     if(Q){const q=Q.toLowerCase();rows=rows.filter(i=>(i.name+" "+i.org+" "+i.area+" "+(i.about||"")).toLowerCase().includes(q));}
     const rank={open:0,up:1,exp:2,closed:3};
     const byDate=(a,b)=>(a.nextD?a.nextD.d:"9999")<(b.nextD?b.nextD.d:"9999")?-1:(a.nextD?a.nextD.d:"9999")>(b.nextD?b.nextD.d:"9999")?1:0;
@@ -425,6 +437,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
     else rows.sort((a,b)=>rank[a.group]-rank[b.group]||byDate(a,b)||a.name.localeCompare(b.name));
     if(SORT&&DIR==="desc") rows.reverse();
     document.querySelectorAll(".board th button").forEach(b=>b.dataset.dir=b.dataset.sort===SORT?DIR:"");
+    renderListbar();
     document.getElementById("count").textContent=`${rows.length} of ${view().length} shown`;
     const B=document.getElementById("board");
     if(!rows.length){B.innerHTML=`<tr class="empty"><td colspan="7">Nothing matches. Clear the search or pick another filter.</td></tr>`;return;}
@@ -448,7 +461,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
     }).join("");
   }
   function detail(it){
-    const dl=it.dates.slice().sort((a,b)=>a.d<b.d?-1:1).map(x=>`<li class="${days(x.d)<0?"past":""}${it.nextD===x?" hit":""}"><time class="num" datetime="${x.d}">${x.approx?esc(x.approx):fmt(x.d)}</time><span>${esc(x.l)}</span></li>`).join("");
+    const dl=it.dates.slice().sort((a,b)=>a.d<b.d?-1:1).map(x=>`<li class="${days(x.d)<0?"past":""}${it.nextD===x?" hit":""}"><time class="num" datetime="${x.d}">${x.approx?esc(x.approx):fmt(x.d)}</time><span>${esc(x.l)}${!x.approx&&days(x.d)>=0?`<a class="gcal" href="${gcal(it,x)}" target="_blank" rel="noopener">+ Google Calendar</a>`:""}</span></li>`).join("");
     const exp=(EXP[it.name]||[]).map(([m,l])=>{const [y,mm]=m.split("-").map(Number);return `<li><time class="num" style="color:var(--muted)">${MON[mm-1]} ${y}</time><span style="font-style:italic;color:var(--muted)">${esc(l)}</span></li>`;}).join("");
     let facts="";
     if(it.t==="m"){const m=findEv(it,MEMO),n=findEv(it,NAT);
@@ -458,11 +471,72 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
     return `<tr class="det"><td colspan="7"><div class="dgrid">
       <div>${it.about?`<p class="about">${esc(it.about)}</p>`:""}
         <dl class="dl2">${facts}${it.who?`<dt>Eligibility</dt><dd>${esc(it.who)}</dd>`:""}${it.prize?`<dt>Prize</dt><dd>${esc(it.prize)}</dd>`:""}${it.note?`<dt>Notes</dt><dd>${esc(it.note)}</dd>`:""}</dl>
-        <div class="dfoot">${it.link?`<a href="${esc(it.link)}" target="_blank" rel="noopener">Official page ↗</a>`:""}<span class="src" style="--c:${sc}">${st}</span><button class="star" data-k="${esc(it.name)}" aria-pressed="${on}">${on?"On my list":"Add to my list"}</button></div>
+        <div class="dfoot">${it.link?`<a href="${esc(it.link)}" target="_blank" rel="noopener">Official page ↗</a>`:""}<span class="src" style="--c:${sc}">${st}</span><button class="star" data-k="${esc(it.name)}" aria-pressed="${on}">${on?"On my list":"Add to my list"}</button>${upDates(it).length?`<button class="calbtn" data-ics="${esc(it.name)}">Add dates to calendar</button>`:""}</div>
       </div>
       <div><h4>Key dates</h4><ul class="kd">${dl||""}${exp}</ul>${!dl&&!exp&&it.expect?`<p class="exp">${esc(it.expect)}</p>`:""}${(dl||exp)&&it.expect?`<p class="exp">${esc(it.expect)}</p>`:""}</div>
     </div></td></tr>`;
   }
+  /* calendar and sharing */
+  function code(n){let h=5381;for(let i=0;i<n.length;i++)h=((h<<5)+h+n.charCodeAt(i))>>>0;return h.toString(36);}
+  const ymd=d=>d.replace(/-/g,"");
+  const nextDay=d=>{const x=new Date(d+"T00:00:00");x.setDate(x.getDate()+1);return x.getFullYear()+String(x.getMonth()+1).padStart(2,"0")+String(x.getDate()).padStart(2,"0");};
+  const upDates=it=>it.dates.filter(x=>!x.approx&&days(x.d)>=0).sort((a,b)=>a.d<b.d?-1:1);
+  function gcal(it,x){
+    const p=new URLSearchParams({action:"TEMPLATE",text:`${it.name}: ${x.l}`,dates:`${ymd(x.d)}/${nextDay(x.d)}`,details:`${it.about||""}\n\nOfficial page: ${it.link||"see tracker"}\nTracker: https://moot-writing-tracker.github.io/\nCheck the official page before you submit.`});
+    return "https://calendar.google.com/calendar/render?"+p.toString();
+  }
+  const icsEsc=s=>String(s).replace(/\\/g,"\\\\").replace(/;/g,"\;").replace(/,/g,"\\,").replace(/\n/g,"\\n");
+  function fold(l){const out=[];while(l.length>73){out.push(l.slice(0,73));l=" "+l.slice(73);}out.push(l);return out.join("\r\n");}
+  function ics(list){
+    const stamp=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+Z$/,"Z");
+    const L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Moot Court and Writing Competitions Tracker//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH","X-WR-CALNAME:Moot and Writing Competitions"];
+    list.forEach(it=>upDates(it).forEach(x=>{
+      L.push("BEGIN:VEVENT",`UID:${code(it.name)}-${ymd(x.d)}@moot-writing-tracker.github.io`,`DTSTAMP:${stamp}`,`DTSTART;VALUE=DATE:${ymd(x.d)}`,`DTEND;VALUE=DATE:${nextDay(x.d)}`,
+        fold(`SUMMARY:${icsEsc(it.name+": "+x.l)}`),fold(`DESCRIPTION:${icsEsc((it.about||"")+"\n\nOfficial page: "+(it.link||"see tracker")+"\nTracker: https://moot-writing-tracker.github.io/\nCheck the official page before you submit.")}`),
+        ...(it.link?[fold(`URL:${it.link}`)]:[]),
+        "BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:Deadline in 7 days","TRIGGER:-P7D","END:VALARM",
+        "BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:Deadline tomorrow","TRIGGER:-P1D","END:VALARM","END:VEVENT");}));
+    L.push("END:VCALENDAR");return L.join("\r\n")+"\r\n";
+  }
+  function download(name,text){
+    const b=new Blob([text],{type:"text/calendar;charset=utf-8"}),u=URL.createObjectURL(b),a=document.createElement("a");
+    a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(u);a.remove();},500);
+  }
+  const fileName=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60)+".ics";
+  const params=new URLSearchParams(location.search);
+  const SHARED=new Set((params.get("list")||"").split(/[.,]/).filter(Boolean));
+  let SV=SHARED.size>0;
+  if(SV){const tabs=new Set(ITEMS.filter(i=>SHARED.has(code(i.name))).map(i=>i.t));if(!location.hash&&tabs.size===1&&tabs.has("w"))T="w";}
+  function shareLink(){const ids=ITEMS.filter(i=>mine[i.name]).map(i=>code(i.name));return location.origin+location.pathname+"?list="+ids.join(".")+(T==="w"?"#writing":"#moots");}
+  function renderListbar(){
+    const L=document.getElementById("listbar");
+    const myCount=ITEMS.filter(i=>mine[i.name]).length;
+    const chip=document.querySelector('.chip[data-s="mine"]');if(chip)chip.textContent=myCount?`My list (${myCount})`:"My list";
+    if(SV){
+      const sh=ITEMS.filter(i=>SHARED.has(code(i.name)));const m=sh.filter(i=>i.t==="m").length,w=sh.length-m;
+      L.hidden=false;
+      L.innerHTML=`<span>You are viewing a <b>shared list</b>: ${m} moot${m===1?"":"s"} and ${w} writing competition${w===1?"":"s"}. Switch tabs to see both.</span><button class="lb" data-act="saveshared">Save to my list</button><button class="lb ghost" data-act="icsshared">Add all to calendar</button><button class="lb ghost" data-act="exitshared">Show all competitions</button>`;
+      return;
+    }
+    if(S!=="mine"){L.hidden=true;L.innerHTML="";return;}
+    L.hidden=false;
+    if(!myCount){L.innerHTML=`<span>Your list is empty. Open any competition and click <b>Add to my list</b>. Your list saves in this browser.</span>`;return;}
+    L.innerHTML=`<span><b>${myCount}</b> saved in this browser.</span><button class="lb" data-act="icsmine">Add my list to calendar</button><button class="lb ghost" data-act="share">Copy share link</button>`;
+  }
+  document.getElementById("listbar").addEventListener("click",e=>{
+    const b=e.target.closest("button");if(!b)return;const act=b.dataset.act;const L=document.getElementById("listbar");
+    if(act==="icsmine"){download("my-moot-and-writing-list.ics",ics(ITEMS.filter(i=>mine[i.name])));}
+    if(act==="icsshared"){download("shared-moot-and-writing-list.ics",ics(ITEMS.filter(i=>SHARED.has(code(i.name)))));}
+    if(act==="saveshared"){ITEMS.forEach(i=>{if(SHARED.has(code(i.name)))mine[i.name]=1;});save();b.textContent="Saved";b.disabled=true;renderBoard();}
+    if(act==="exitshared"){SV=false;history.replaceState(null,"",location.pathname+location.hash);renderListbar();renderBoard();}
+    if(act==="share"){
+      const link=shareLink();
+      const done=()=>{let m=L.querySelector(".msg");if(!m){m=document.createElement("span");m.className="msg";L.appendChild(m);}m.textContent="Link copied";};
+      const fall=()=>{let i=L.querySelector("input");if(!i){i=document.createElement("input");i.readOnly=true;i.setAttribute("aria-label","Share link");L.appendChild(i);}i.value=link;i.focus();i.select();};
+      try{navigator.clipboard.writeText(link).then(done,fall);}catch(err){fall();}
+      fall();
+    }
+  });
   function toggle(id,force){ if(force===true||!OPEN.has(id)&&force!==false) OPEN.add(id); else OPEN.delete(id); renderBoard(); }
 
   /* busiest months */
@@ -549,11 +623,12 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
   addEventListener("hashchange",()=>{if(location.hash!=="#moots"&&location.hash!=="#writing")return;T=fromHash();OPEN.clear();all();});
   document.querySelector(".yr").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;Y=+b.dataset.y;renderYear();renderCal();});
   document.getElementById("months").addEventListener("click",e=>{const b=e.target.closest(".mcol");if(!b)return;document.getElementById("m-"+b.dataset.m).scrollIntoView({behavior:still?"auto":"smooth",block:"start"});});
-  document.querySelectorAll(".chip").forEach(b=>b.addEventListener("click",()=>{S=b.dataset.s;document.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));renderBoard();}));
+  document.querySelectorAll(".chip").forEach(b=>b.addEventListener("click",()=>{S=b.dataset.s;if(SV){SV=false;history.replaceState(null,"",location.pathname+location.hash);}document.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));renderBoard();}));
   document.getElementById("q").addEventListener("input",e=>{Q=e.target.value.trim();renderBoard();});
   document.querySelectorAll(".board th button").forEach(b=>b.addEventListener("click",()=>{const k=b.dataset.sort;if(SORT===k)DIR=DIR==="asc"?"desc":"asc";else{SORT=k;DIR="asc";}renderBoard();}));
   const B=document.getElementById("board");
   B.addEventListener("click",e=>{
+    const ic=e.target.closest("[data-ics]");if(ic){const it=ITEMS.find(i=>i.name===ic.dataset.ics);if(it)download(fileName(it.name),ics([it]));return;}
     const st=e.target.closest(".star");if(st){const k=st.dataset.k;if(mine[k])delete mine[k];else mine[k]=1;save();renderBoard();return;}
     if(e.target.closest("a"))return;
     const r=e.target.closest("tr.row");if(r)toggle(r.dataset.id);
