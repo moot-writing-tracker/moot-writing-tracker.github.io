@@ -126,6 +126,8 @@ tr.row.open td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
 .tm.set b{color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
 .mm{font-size:16px;white-space:nowrap}
 .mm.set{color:var(--accent);font-weight:600}
+.mml{display:block;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+@media (max-width:700px){.mml{display:none}}
 .mm.est{color:var(--muted);font-style:italic}
 .ar{color:var(--muted);font-size:18px;transition:transform .2s;margin-left:8px}
 .c-ar{white-space:nowrap}
@@ -222,7 +224,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
   tr.row td.c-nx{grid-column:1;font-size:16px}
   tr.row td.c-dt{grid-column:1}
   tr.row td.c-mm{grid-column:1}
-  tr.row.m td.c-mm::before{content:"Memorial: ";color:var(--muted);font-style:normal;font-weight:400}
+  tr.row.m td.c-mm::before{content:attr(data-lab) ": ";color:var(--muted);font-style:normal;font-weight:400}
   tr.row td.c-ar{grid-column:1;padding-top:6px}
   tr.row td.c-ar .ar{display:none}
   tr.det td{padding:0 0 16px}
@@ -296,7 +298,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
         <th>Next event</th>
         <th><button data-sort="date">Date</button></th>
         <th class="r"><button data-sort="days">Days left</button></th>
-        <th id="col5">Memorial</th>
+        <th id="col5">Memorial / Orals</th>
         <th>My list</th>
       </tr></thead>
       <tbody id="board"></tbody>
@@ -325,7 +327,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
   <footer>Check the official page before you submit. "My list" saves in your own browser only.</footer>
 </div>
 
-<script src="data.js?v=202611022331"></script>
+<script src="data.js?v=202611022345"></script>
 <script>
 (function(){
   const MS=86400000, today=new Date(); today.setHours(0,0,0,0);
@@ -370,6 +372,18 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
     return null;
   }
 
+  const ORAL=/oral|rounds|hearing|finals?\b|competition,|competition \(|moot expected|in-person|international rounds/i, NOTORAL=/regist|deadline|due|memori|memorand|application|problem|case/i;
+  function stage(it){
+    const m=findEv(it,MEMO);
+    if(m&&!m.past) return {lab:"Memorial",txt:m.txt.replace(/^Exp\. /,"Exp. "),set:m.set};
+    const o=it.dates.filter(x=>days(x.d)>=0&&ORAL.test(x.l)&&!NOTORAL.test(x.l)).sort((a,b)=>a.d<b.d?-1:1)[0];
+    if(o) return {lab:"Orals",txt:o.approx||fmt(o.d),set:!o.approx};
+    const e=(EXP[it.name]||[]).find(([mm,l])=>ORAL.test(l)&&!NOTORAL.test(l));
+    if(e){const [y,mo]=e[0].split("-").map(Number);if(new Date(y,mo,0)>=today) return {lab:"Orals",txt:`Exp. ${MON[mo-1]} ${y}`,set:false};}
+    if(m) return {lab:"Memorial",txt:m.txt,set:false};
+    return {lab:"Memorial",txt:"",set:false};
+  }
+
   /* events for calendar and year bars */
   function events(y){
     const out=[];
@@ -388,7 +402,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
     document.getElementById("n-m").textContent=ITEMS.filter(i=>i.t==="m").length;
     document.getElementById("n-w").textContent=ITEMS.filter(i=>i.t==="w").length;
     document.querySelectorAll(".tabs a").forEach(a=>a.setAttribute("aria-current",a.dataset.t===T?"page":"false"));
-    document.getElementById("col5").textContent=T==="m"?"Memorial":"Area";
+    document.getElementById("col5").textContent=T==="m"?"Memorial / Orals":"Area";
   }
 
   function ticker(){
@@ -452,7 +466,11 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
       if(it.group==="open"&&n!==null&&n<=7){lt="Final week";lc="var(--red)";}
       const tcls=n===null?"":(it.group==="open"&&n<=7)?"urgent":it.s==="soon"?"hot":it.group==="open"?"ok":"set";
       const m=it.t==="m"?findEv(it,MEMO):null;
-      const c5=it.t==="m"?(m?`<span class="mm ${m.set?"set":"est"}">${esc(m.txt)}</span>`:`<span class="mm est">Not announced</span>`):`<span class="mm">${esc(it.area)}</span>`;
+      let lab="Memorial", c5;
+      if(it.t==="m"){
+        const st=stage(it); lab=st.lab;
+        c5=st.txt?`<span class="mm ${st.set?"set":"est"}"><small class="mml">${st.lab}</small>${esc(st.txt)}</span>`:`<span class="mm est">Not announced</span>`;
+      } else c5=`<span class="mm">${esc(it.area)}</span>`;
       const open=OPEN.has(it.id);
       return `<tr class="row ${it.t}${open?" open":""}" id="${it.id}" data-id="${it.id}" tabindex="0" aria-expanded="${open}">
         <td class="c-st"><span class="st${lc==="var(--red)"?" red":""}" style="--c:${lc}"><i></i>${lt}</span></td>
@@ -460,7 +478,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
         <td class="c-nx nx">${nextLabel(it)}</td>
         <td class="c-dt dt num">${it.nextD?(it.nextD.approx||fmt(it.nextD.d)):"--"}</td>
         <td class="c-tm tm r ${tcls}">${n===null?`<b class="num">--</b><small>No date</small>`:`<b class="num">${n}</b><small>${n===1?"day":"days"}</small>`}</td>
-        <td class="c-mm">${c5}</td>
+        <td class="c-mm" data-lab="${lab}">${c5}</td>
         <td class="c-ar"><button class="rsave star" data-k="${esc(it.name)}" aria-pressed="${!!mine[it.name]}" aria-label="${mine[it.name]?"Remove from my list":"Save to my list"}">${mine[it.name]?"★ Saved":"☆ Save"}</button><span class="ar">›</span></td>
       </tr>${open?detail(it):""}`;
     }).join("");
