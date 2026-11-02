@@ -162,6 +162,8 @@ tr.det td{background:var(--bg);padding:0 12px 26px;border-bottom:1px solid var(-
 
 /* sections */
 .sec{padding-top:56px}
+.calh{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.yr2 button{font-size:16px;padding:4px 14px}
 .sec h2{font-size:30px;font-weight:500;margin:0;padding-bottom:10px;border-bottom:1px solid var(--ink)}
 .sec .lead{color:var(--muted);margin:8px 0 14px;font-size:17px}
 .chart{padding:14px 0 6px;overflow-x:auto}
@@ -309,7 +311,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
   </section>
 
   <section class="sec" aria-labelledby="calh">
-    <h2 id="calh">Calendar</h2>
+    <h2 id="calh" class="calh"><span>Calendar</span><span class="yr yr2" role="group" aria-label="Calendar year"><button data-y="2026">2026</button><button data-y="2027">2027</button></span></h2>
     <p class="lead" id="callead"></p>
     <div class="mgrid" id="mgrid"></div>
   </section>
@@ -587,7 +589,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
   /* calendar */
   function renderCal(){
     const ev=events(Y), curM=today.getFullYear()===Y?today.getMonth():-1;
-    document.getElementById("callead").textContent=`${T==="m"?"Moots":"Writing calls"}, January to December ${Y}. Confirmed dates show the day. Expected dates show the month, based on past cycles. Use the year switch above to change year.`;
+    document.getElementById("callead").textContent=`${T==="m"?"Moots":"Writing competitions"} run from January to December ${Y}. Confirmed dates show the day and expected dates show the month based on past cycles.`;
     document.getElementById("mgrid").innerHTML=MONL.map((mn,i)=>{
       const es=ev.filter(e=>e.m===i), pastM=new Date(Y,i+1,0)<today;
       const lis=es.map(e=>`<li class="${e.kind==="x"?"ex":""}${e.past?" gone":""}"><span class="d num">${e.day?e.day+" "+MON[i]:"Exp."}</span><span class="t"><a href="#${e.it.id}" data-jump="${e.it.id}">${esc(e.it.name)}</a>. ${esc(e.label)}</span></li>`).join("");
@@ -624,7 +626,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
 
   /* events */
   addEventListener("hashchange",()=>{if(location.hash!=="#moots"&&location.hash!=="#writing")return;T=fromHash();OPEN.clear();all();});
-  document.querySelector(".yr").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;Y=+b.dataset.y;renderYear();renderCal();});
+  document.querySelectorAll(".yr").forEach(g=>g.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;Y=+b.dataset.y;renderYear();renderCal();}));
   document.getElementById("months").addEventListener("click",e=>{const b=e.target.closest(".mcol");if(!b)return;document.getElementById("m-"+b.dataset.m).scrollIntoView({behavior:still?"auto":"smooth",block:"start"});});
   document.querySelectorAll(".chip").forEach(b=>b.addEventListener("click",()=>{S=b.dataset.s;if(SV){SV=false;history.replaceState(null,"",location.pathname+location.hash);}document.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));renderBoard();}));
   document.getElementById("q").addEventListener("input",e=>{Q=e.target.value.trim();renderBoard();});
