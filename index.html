@@ -162,7 +162,7 @@ tr.det td{background:var(--bg);padding:0 12px 26px;border-bottom:1px solid var(-
 
 /* sections */
 .sec{padding-top:56px}
-.calh{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.calh{display:flex;align-items:center;justify-content:flex-start;gap:18px;flex-wrap:wrap}
 .yr2 button{font-size:16px;padding:4px 14px}
 .sec h2{font-size:30px;font-weight:500;margin:0;padding-bottom:10px;border-bottom:1px solid var(--ink)}
 .sec .lead{color:var(--muted);margin:8px 0 14px;font-size:17px}
@@ -589,7 +589,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
   /* calendar */
   function renderCal(){
     const ev=events(Y), curM=today.getFullYear()===Y?today.getMonth():-1;
-    document.getElementById("callead").textContent=`${T==="m"?"Moots":"Writing competitions"} run from January to December ${Y}. Confirmed dates show the day and expected dates show the month based on past cycles.`;
+    document.getElementById("callead").textContent=`${T==="m"?"Moots":"Writing competitions"} run from January to December. Confirmed dates show the day and expected dates show the month based on past cycles.`;
     document.getElementById("mgrid").innerHTML=MONL.map((mn,i)=>{
       const es=ev.filter(e=>e.m===i), pastM=new Date(Y,i+1,0)<today;
       const lis=es.map(e=>`<li class="${e.kind==="x"?"ex":""}${e.past?" gone":""}"><span class="d num">${e.day?e.day+" "+MON[i]:"Exp."}</span><span class="t"><a href="#${e.it.id}" data-jump="${e.it.id}">${esc(e.it.name)}</a>. ${esc(e.label)}</span></li>`).join("");
