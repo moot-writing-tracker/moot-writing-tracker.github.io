@@ -1,6 +1,6 @@
 # Moot Court and Writing Competitions Tracker
 
-Moot court competitions and writing competitions for law students and young lawyers, with live deadlines, countdowns, a yearly calendar and the busiest months.
+Moot court competitions and writing competitions for law students and young lawyers, with live deadlines, countdowns, an annual calendar and the busiest months.
 
 Live site: https://moot-writing-tracker.github.io
 
