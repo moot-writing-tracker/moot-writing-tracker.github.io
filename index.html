@@ -205,6 +205,12 @@ tr.det td{background:var(--bg);padding:0 12px 26px;border-bottom:1px solid var(-
 footer{font-size:15px;color:var(--muted);padding-bottom:48px}
 .signoff{border-top:1px solid var(--line);margin-top:18px;padding-top:22px;color:#000;font-weight:700;font-size:18px;line-height:1.6}
 .signoff p{margin:0 0 16px}
+.credits{overflow:hidden;white-space:nowrap;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);padding:10px 0;margin-top:-6px}
+.cr-in{display:inline-flex;animation:cr 70s linear infinite;transform:translateX(-50%)}
+.cr-in span{padding-right:60px}
+.credits:hover .cr-in{animation-play-state:paused}
+@keyframes cr{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+@media (prefers-reduced-motion:reduce){.cr-in{animation:none;transform:none;white-space:normal;display:block}.cr-in span~span{display:none}.credits{white-space:normal}}
 .signoff .attr{font-weight:400;font-style:italic;color:var(--muted);margin:-8px 0 28px}
 .legnote{flex-basis:100%;margin:6px 0 0;font-size:15px;color:var(--muted)}
 .signoff{padding-bottom:56px}
@@ -333,11 +339,12 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
   <section class="signoff" aria-label="A note from the team">
     <p>If you can look into the seeds of time<br>And say which grain will grow and which will not,<br>Speak then to me.</p>
     <p class="attr">William Shakespeare, Macbeth</p>
-    <p>With lots of love,<br>Raymond Angu'zu, Conrad Akesigaruhanga and Daniel Mwesigwa Nampuuma</p>
+    <p>With lots of love,</p>
+    <div class="credits" aria-label="Raymond Angu'zu, Project Lead. Conrad Akesigaruhanga, Researcher. Daniel Mwesigwa Nampuuma, Researcher. © 2026"><div class="cr-in" aria-hidden="true"><span>Raymond Angu'zu, Project Lead &nbsp;·&nbsp; Conrad Akesigaruhanga, Researcher &nbsp;·&nbsp; Daniel Mwesigwa Nampuuma, Researcher &nbsp;·&nbsp; © 2026</span><span>Raymond Angu'zu, Project Lead &nbsp;·&nbsp; Conrad Akesigaruhanga, Researcher &nbsp;·&nbsp; Daniel Mwesigwa Nampuuma, Researcher &nbsp;·&nbsp; © 2026</span><span>Raymond Angu'zu, Project Lead &nbsp;·&nbsp; Conrad Akesigaruhanga, Researcher &nbsp;·&nbsp; Daniel Mwesigwa Nampuuma, Researcher &nbsp;·&nbsp; © 2026</span><span>Raymond Angu'zu, Project Lead &nbsp;·&nbsp; Conrad Akesigaruhanga, Researcher &nbsp;·&nbsp; Daniel Mwesigwa Nampuuma, Researcher &nbsp;·&nbsp; © 2026</span></div></div>
   </section>
 </div>
 
-<script src="data.js?v=202611030554"></script>
+<script src="data.js?v=202611030644"></script>
 <script>
 (function(){
   const MS=86400000, today=new Date(); today.setHours(0,0,0,0);
