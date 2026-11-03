@@ -205,7 +205,8 @@ tr.det td{background:var(--bg);padding:0 12px 26px;border-bottom:1px solid var(-
 footer{font-size:15px;color:var(--muted);padding-bottom:48px}
 .signoff{border-top:1px solid var(--line);margin-top:18px;padding-top:22px;color:#000;font-weight:700;font-size:18px;line-height:1.6}
 .signoff p{margin:0 0 16px}
-footer.fine{padding-top:8px}
+.legnote{flex-basis:100%;margin:6px 0 0;font-size:15px;color:var(--muted)}
+.signoff{padding-bottom:56px}
 
 @media (max-width:900px){
   .kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -326,16 +327,16 @@ footer.fine{padding-top:8px}
     <span style="--c:var(--warn)">Checked on a listing site; confirm on the official page</span>
     <span style="--c:var(--off)">Not yet confirmed online; based on past cycles</span>
     <span style="--c:var(--red)">Solid red: 7 days or less</span><span style="--c:var(--red)">Red: 8 to 21 days</span><span style="--c:var(--up)">Green: more than 21 days</span>
+    <p class="legnote">Check the official page before you submit. "My list" saves in your own browser only.</p>
   </div>
   <section class="signoff" aria-label="A note from the team">
     <p>Dear young lawyer,</p>
     <p>If you can look into the seeds of time<br>And say which grain will grow and which will not,<br>Speak then to me.<br>William Shakespeare, Macbeth</p>
     <p>With lots of love,<br>Raymond Angu'zu, Conrad Akesigaruhanga and Daniel Mwesigwa Nampuuma</p>
   </section>
-  <footer class="fine">Check the official page before you submit. "My list" saves in your own browser only.</footer>
 </div>
 
-<script src="data.js?v=202611030549"></script>
+<script src="data.js?v=202611030552"></script>
 <script>
 (function(){
   const MS=86400000, today=new Date(); today.setHours(0,0,0,0);
