@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Moot court and writing competitions for law students and young lawyers, with live deadlines, countdowns and an annual calendar.">
-<meta property="og:title" content="Moot Court and Writing Competitions Tracker">
-<meta property="og:description" content="Moot court and writing competitions for law students and young lawyers, with live deadlines, countdowns and an annual calendar.">
+<meta name="description" content="Moot court and writing competitions, and journal submissions, for law students and young lawyers, with live deadlines, countdowns and an annual calendar.">
+<meta property="og:title" content="Moot Court, Writing Competitions and Journal Submissions Tracker">
+<meta property="og:description" content="Moot court and writing competitions, and journal submissions, for law students and young lawyers, with live deadlines, countdowns and an annual calendar.">
 <meta property="og:image" content="https://moot-writing-tracker.github.io/logo.png">
 <link rel="icon" type="image/png" href="logo.png">
-<title>Moot Court and Writing Competitions Tracker</title>
+<title>Moot Court, Writing Competitions and Journal Submissions Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
 <style>
@@ -273,7 +273,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
   <header class="mast">
     <div>
       <div class="sub">For law students and young lawyers</div>
-      <h1>Moot Court and Writing Competitions Tracker</h1>
+      <h1>Moot Court, Writing Competitions and Journal Submissions Tracker</h1>
     </div>
     <div class="asof"><span>Today <b id="today"></b></span><span>Dates last checked <b id="checked"></b></span></div>
   </header>
@@ -355,7 +355,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
   </section>
 </div>
 
-<script src="data.js?v=202611071704"></script>
+<script src="data.js?v=202611071717"></script>
 <script>
 (function(){
   const MS=86400000, today=new Date(); today.setHours(0,0,0,0);
@@ -529,7 +529,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
     const [st,sc]=SRC[it.src]; const on=!!mine[it.name];
     return `<tr class="det"><td colspan="7"><div class="dgrid">
       <div>${it.about?`<p class="about">${esc(it.about)}</p>`:""}
-        <dl class="dl2">${facts}${it.who?`<dt>Eligibility</dt><dd>${esc(it.who)}</dd>`:""}${it.prize?`<dt>${it.t==="j"?"Publication":"Prize"}</dt><dd>${esc(it.prize)}</dd>`:""}${it.note?`<dt>Notes</dt><dd>${esc(it.note).replace(/\n/g,"<br>")}${it.t==="j"&&it.link&&!it.nosite?`<br>Visit the website for more details: <a href="${esc(it.link)}" target="_blank" rel="noopener">${esc(it.link.replace(/^https?:\/\//,"").replace(/\/$/,""))}</a>`:""}</dd>`:""}</dl>
+        <dl class="dl2">${facts}${it.who?`<dt>Eligibility</dt><dd>${esc(it.who)}</dd>`:""}${it.prize?`<dt>${it.t==="j"?"Publication":"Prize"}</dt><dd>${esc(it.prize)}</dd>`:""}${it.note?`<dt>Notes</dt><dd>${esc(it.note).replace(/\n/g,"<br>")}${it.t==="j"&&it.link&&!it.nosite?`<br>Visit the website for more details: <a href="${esc(it.link)}" target="_blank" rel="noopener">${esc(it.link.replace(/^https?:\/\//,"").replace(/\/$/,""))}</a>`:""}${it.archive?`<br>Read past issues: <a href="${esc(it.archive)}" target="_blank" rel="noopener">${esc(it.archive.replace(/^https?:\/\//,"").replace(/\/$/,""))}</a>${it.access?` (${esc(it.access)})`:""}`:""}</dd>`:""}</dl>
         <div class="dfoot">${it.link?`<a href="${esc(it.link)}" target="_blank" rel="noopener">Official page ↗</a>`:""}<span class="src" style="--c:${sc}">${st}</span><button class="star" data-k="${esc(it.name)}" aria-pressed="${on}">${on?"On my list":"Add to my list"}</button>${upDates(it).length?`<button class="calbtn" data-ics="${esc(it.name)}">Add dates to calendar</button>`:""}</div>
       </div>
       <div><h4>Key dates</h4><ul class="kd">${dl||""}${exp}</ul>${!dl&&!exp&&it.expect?`<p class="exp">${esc(it.expect)}</p>`:""}${(dl||exp)&&it.expect?`<p class="exp">${esc(it.expect)}</p>`:""}</div>
@@ -548,7 +548,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
   function fold(l){const out=[];while(l.length>73){out.push(l.slice(0,73));l=" "+l.slice(73);}out.push(l);return out.join("\r\n");}
   function ics(list){
     const stamp=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+Z$/,"Z");
-    const L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Moot Court and Writing Competitions Tracker//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH","X-WR-CALNAME:Moot and Writing Competitions"];
+    const L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Moot Court, Writing Competitions and Journal Submissions Tracker//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH","X-WR-CALNAME:Moots, Writing Competitions and Journal Submissions"];
     list.forEach(it=>upDates(it).forEach(x=>{
       L.push("BEGIN:VEVENT",`UID:${code(it.name)}-${ymd(x.d)}@moot-writing-tracker.github.io`,`DTSTAMP:${stamp}`,`DTSTART;VALUE=DATE:${ymd(x.d)}`,`DTEND;VALUE=DATE:${nextDay(x.d)}`,
         fold(`SUMMARY:${icsEsc(it.name+": "+x.l)}`),fold(`DESCRIPTION:${icsEsc((it.about||"")+"\n\nOfficial page: "+(it.link||"see tracker")+"\nTracker: https://moot-writing-tracker.github.io/\nCheck the official page before you submit.")}`),
