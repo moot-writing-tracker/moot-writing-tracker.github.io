@@ -50,6 +50,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .tabs a{font-size:20px;font-weight:600;color:var(--muted);text-decoration:none;padding:12px 22px 10px;border-bottom:3px solid transparent;margin-bottom:-1px}
 .tabs a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--accent)}
 .tabs a span{font-size:14px;font-weight:500;color:var(--muted);margin-left:6px}
+@media (max-width:700px){.tabs{flex-wrap:wrap}.tabs a{font-size:16px;padding:10px 12px 8px}}
 
 /* index strip */
 .kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-bottom:1px solid var(--line);margin-top:4px}
@@ -270,7 +271,8 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
   </header>
   <nav class="tabs" aria-label="Collection">
     <a href="#moots" data-t="m">Moots <span id="n-m"></span></a>
-    <a href="#writing" data-t="w">Writing <span id="n-w"></span></a>
+    <a href="#writing" data-t="w">Writing Competitions <span id="n-w"></span></a>
+    <a href="#journals" data-t="j">Journal Submissions <span id="n-j"></span></a>
   </nav>
 
   <section class="kpis" id="kpis" aria-label="Summary"></section>
@@ -304,7 +306,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
     <table class="board">
       <thead><tr>
         <th>Status</th>
-        <th><button data-sort="name">Competition</button></th>
+        <th><button data-sort="name" id="colname">Competition</button></th>
         <th>Next event</th>
         <th><button data-sort="date">Date</button></th>
         <th class="r"><button data-sort="days">Days left</button></th>
@@ -343,7 +345,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
   </section>
 </div>
 
-<script src="data.js?v=202611071516"></script>
+<script src="data.js?v=202611071524"></script>
 <script>
 (function(){
   const MS=86400000, today=new Date(); today.setHours(0,0,0,0);
@@ -370,7 +372,8 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
   const LABEL={open:["Open","var(--up)"],soon:["Closing soon","var(--red)"],upcoming:["Dates set","var(--accent)"],expected:["Expected","var(--off)"],closed:["Closed","var(--off)"],unknown:["No call yet","var(--off)"]};
   const SRC={official:["Checked on official page","var(--up)"],listing:["Checked on a listing site","var(--warn)"],calendar:["Not yet confirmed online","var(--off)"]};
 
-  const fromHash=()=>location.hash==="#writing"?"w":"m";
+  const fromHash=()=>location.hash==="#writing"?"w":location.hash==="#journals"?"j":"m";
+  const TN={m:"Moots",w:"Writing competitions",j:"Journal submissions"}, HASH={m:"#moots",w:"#writing",j:"#journals"};
   let T=fromHash(), S="all", Q="", SORT=null, DIR="asc", Y=today.getFullYear();
   const OPEN=new Set();
   const view=()=>ITEMS.filter(i=>i.t===T);
@@ -417,8 +420,10 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
     document.getElementById("checked").textContent=CHECKED;
     document.getElementById("n-m").textContent=ITEMS.filter(i=>i.t==="m").length;
     document.getElementById("n-w").textContent=ITEMS.filter(i=>i.t==="w").length;
+    document.getElementById("n-j").textContent=ITEMS.filter(i=>i.t==="j").length;
     document.querySelectorAll(".tabs a").forEach(a=>a.setAttribute("aria-current",a.dataset.t===T?"page":"false"));
     document.getElementById("col5").textContent=T==="m"?"Memorial / Orals":"Area";
+    document.getElementById("colname").textContent=T==="j"?"Journal":"Competition";
   }
 
   function ticker(){
@@ -445,7 +450,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
   function renderYear(){
     const ev=events(Y);
     document.querySelectorAll(".yr button").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.y===Y));
-    document.getElementById("yearlabel").textContent=`${T==="m"?"Moots":"Writing"}, Jan to Dec ${Y}`;
+    document.getElementById("yearlabel").textContent=`${TN[T]}, Jan to Dec ${Y}`;
     const max=Math.max(5,...MON.map((_,i)=>ev.filter(e=>e.m===i).length));
     const curM=today.getFullYear()===Y?today.getMonth():-1;
     const h=Math.max(5,Math.floor(96/max)-2);
@@ -545,16 +550,16 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
   const params=new URLSearchParams(location.search);
   const SHARED=new Set((params.get("list")||"").split(/[.,]/).filter(Boolean));
   let SV=SHARED.size>0;
-  if(SV){const tabs=new Set(ITEMS.filter(i=>SHARED.has(code(i.name))).map(i=>i.t));if(!location.hash&&tabs.size===1&&tabs.has("w"))T="w";}
-  function shareLink(){const ids=ITEMS.filter(i=>mine[i.name]).map(i=>code(i.name));return location.origin+location.pathname+"?list="+ids.join(".")+(T==="w"?"#writing":"#moots");}
+  if(SV){const tabs=new Set(ITEMS.filter(i=>SHARED.has(code(i.name))).map(i=>i.t));if(!location.hash&&tabs.size===1&&!tabs.has("m"))T=[...tabs][0];}
+  function shareLink(){const ids=ITEMS.filter(i=>mine[i.name]).map(i=>code(i.name));return location.origin+location.pathname+"?list="+ids.join(".")+HASH[T];}
   function renderListbar(){
     const L=document.getElementById("listbar");
     const myCount=ITEMS.filter(i=>mine[i.name]).length;
     const chip=document.querySelector('.chip[data-s="mine"]');if(chip)chip.textContent=myCount?`My list (${myCount})`:"My list";
     if(SV){
-      const sh=ITEMS.filter(i=>SHARED.has(code(i.name)));const m=sh.filter(i=>i.t==="m").length,w=sh.length-m;
+      const sh=ITEMS.filter(i=>SHARED.has(code(i.name)));const m=sh.filter(i=>i.t==="m").length,w=sh.filter(i=>i.t==="w").length,jn=sh.filter(i=>i.t==="j").length;
       L.hidden=false;
-      L.innerHTML=`<span>You are viewing a <b>shared list</b>: ${m} moot${m===1?"":"s"} and ${w} writing competition${w===1?"":"s"}. Switch tabs to see both.</span><button class="lb" data-act="saveshared">Save to my list</button><button class="lb ghost" data-act="icsshared">Add all to calendar</button><button class="lb ghost" data-act="exitshared">Show all competitions</button>`;
+      L.innerHTML=`<span>You are viewing a <b>shared list</b>: ${m} moot${m===1?"":"s"}, ${w} writing competition${w===1?"":"s"} and ${jn} journal submission${jn===1?"":"s"}. Switch tabs to see them all.</span><button class="lb" data-act="saveshared">Save to my list</button><button class="lb ghost" data-act="icsshared">Add all to calendar</button><button class="lb ghost" data-act="exitshared">Show all competitions</button>`;
       return;
     }
     L.hidden=false;
@@ -602,28 +607,28 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
     if(M[peak].dl>0&&peak>0){const x0=L+ps*cw,x1=L+peak*cw;s+=`<rect class="prep" x="${x0}" y="${TP-34}" width="${x1-x0}" height="${H-B-TP+34}"/><line class="prepl" x1="${x0}" x2="${x0}" y1="${TP-34}" y2="${H-B}"/><text class="preptx" x="${x0+6}" y="${TP-20}">START PREPARING</text>`;}
     M.forEach((x,i)=>{
       const cx=L+i*cw+(cw-bw)/2;let y=H-B;
-      [["dl","b-dl"],["rd","b-rd"],["op","b-op"]].forEach(([k,c])=>{if(!x[k])return;const h=sc(x[k]);y-=h;s+=`<rect class="${c}" x="${cx}" y="${y}" width="${bw}" height="${h}"><title>${MONL[x.m]} ${x.y}: ${x[k]} ${k==="dl"?"deadlines":k==="rd"?(T==="m"?"oral rounds":"results or events"):"calls opening"}</title></rect>`;});
+      [["dl","b-dl"],["rd","b-rd"],["op","b-op"]].forEach(([k,c])=>{if(!x[k])return;const h=sc(x[k]);y-=h;s+=`<rect class="${c}" x="${cx}" y="${y}" width="${bw}" height="${h}"><title>${MONL[x.m]} ${x.y}: ${x[k]} ${k==="dl"?"deadlines":k==="rd"?(T==="m"?"oral rounds":T==="j"?"publication dates":"results or events"):"calls opening"}</title></rect>`;});
       const tot=x.dl+x.rd+x.op;if(tot)s+=`<text class="val" x="${cx+bw/2}" y="${y-6}" text-anchor="middle">${tot}</text>`;
       s+=`<text class="ax${i===0?" now":""}" x="${cx+bw/2}" y="${H-B+18}" text-anchor="middle">${MON[x.m]}</text>`;
       if(i===0||x.m===0)s+=`<text class="ax" x="${cx+bw/2}" y="${H-B+35}" text-anchor="middle">${x.y}</text>`;
     });
-    s+=`<rect class="b-dl" x="${L}" y="6" width="12" height="12"/><text class="lg" x="${L+18}" y="16">Deadlines</text><rect class="b-rd" x="${L+112}" y="6" width="12" height="12"/><text class="lg" x="${L+130}" y="16">${T==="m"?"Oral rounds":"Results and events"}</text><rect class="b-op" x="${L+280}" y="6" width="12" height="12"/><text class="lg" x="${L+298}" y="16">Calls opening</text>`;
+    s+=`<rect class="b-dl" x="${L}" y="6" width="12" height="12"/><text class="lg" x="${L+18}" y="16">Deadlines</text><rect class="b-rd" x="${L+112}" y="6" width="12" height="12"/><text class="lg" x="${L+130}" y="16">${T==="m"?"Oral rounds":T==="j"?"Publication":"Results and events"}</text><rect class="b-op" x="${L+280}" y="6" width="12" height="12"/><text class="lg" x="${L+298}" y="16">Calls opening</text>`;
     document.getElementById("busysvg").innerHTML=s;
     const pk=M[peak], pd=new Date(pk.y,pk.m-(T==="m"?2:1),T==="m"?1:15);
     const quiet=M.reduce((a,x,i)=>(x.dl+x.rd+x.op)<(M[a].dl+M[a].rd+M[a].op)?i:a,0);
     const rp=M.reduce((a,x,i)=>x.rd>M[a].rd?i:a,0);
-    document.getElementById("busylead").textContent=`${T==="m"?"Moots":"Writing calls"} over the next 12 months. Confirmed dates plus dates expected from past cycles.`;
+    document.getElementById("busylead").textContent=`${T==="m"?"Moots":T==="j"?"Journal calls":"Writing calls"} over the next 12 months. Confirmed dates plus dates expected from past cycles.`;
     document.getElementById("advice").innerHTML=
       `<div><b>Peak deadlines</b>${MONL[pk.m]} ${pk.y}: ${pk.dl} deadline${pk.dl===1?"":"s"}.</div>`+
-      `<div class="prep"><b>Start preparing</b>${T==="m"?"Early":"Mid"} ${MONL[pd.getMonth()]} ${pd.getFullYear()}. ${T==="m"?"A memorial takes eight to ten weeks.":"An essay takes about six weeks."}</div>`+
-      `<div><b>${T==="m"?"Peak oral rounds":"Peak results"}</b>${M[rp].rd?`${MONL[M[rp].m]} ${M[rp].y}: ${M[rp].rd} on the calendar.`:"None tracked yet."}</div>`+
-      `<div><b>Quietest month</b>${MONL[M[quiet].m]} ${M[quiet].y}. Read past problems and winning ${T==="m"?"memorials":"essays"}.</div>`;
+      `<div class="prep"><b>Start preparing</b>${T==="m"?"Early":"Mid"} ${MONL[pd.getMonth()]} ${pd.getFullYear()}. ${T==="m"?"A memorial takes eight to ten weeks.":T==="j"?"An article takes eight to twelve weeks.":"An essay takes about six weeks."}</div>`+
+      `<div><b>${T==="m"?"Peak oral rounds":T==="j"?"Peak publication":"Peak results"}</b>${M[rp].rd?`${MONL[M[rp].m]} ${M[rp].y}: ${M[rp].rd} on the calendar.`:"None tracked yet."}</div>`+
+      `<div><b>Quietest month</b>${MONL[M[quiet].m]} ${M[quiet].y}. ${T==="j"?"Read past issues of the journals you target.":"Read past problems and winning "+(T==="m"?"memorials":"essays")+"."}</div>`;
   }
 
   /* calendar */
   function renderCal(){
     const ev=events(Y), curM=today.getFullYear()===Y?today.getMonth():-1;
-    document.getElementById("callead").textContent=`${T==="m"?"Moots":"Writing competitions"} run from January to December. Confirmed dates show the day and expected dates show the month based on past cycles.`;
+    document.getElementById("callead").textContent=`${T==="j"?"Journal submission calls":TN[T]} run from January to December. Confirmed dates show the day and expected dates show the month based on past cycles.`;
     document.getElementById("mgrid").innerHTML=MONL.map((mn,i)=>{
       const es=ev.filter(e=>e.m===i), pastM=new Date(Y,i+1,0)<today;
       const lis=es.map(e=>`<li class="${e.kind==="x"?"ex":""}${e.past?" gone":""}"><span class="d num">${e.day?e.day+" "+MON[i]:"Exp."}</span><span class="t"><a href="#${e.it.id}" data-jump="${e.it.id}">${esc(e.it.name)}</a>. ${esc(e.label)}</span></li>`).join("");
@@ -659,7 +664,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
   function all(){header();ticker();kpis();renderYear();renderBoard();renderBusy();renderCal();pulseNote();}
 
   /* events */
-  addEventListener("hashchange",()=>{if(location.hash!=="#moots"&&location.hash!=="#writing")return;T=fromHash();OPEN.clear();all();});
+  addEventListener("hashchange",()=>{if(!["#moots","#writing","#journals"].includes(location.hash))return;T=fromHash();OPEN.clear();all();});
   document.querySelectorAll(".yr").forEach(g=>g.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;Y=+b.dataset.y;renderYear();renderCal();}));
   document.getElementById("months").addEventListener("click",e=>{const b=e.target.closest(".mcol");if(!b)return;document.getElementById("m-"+b.dataset.m).scrollIntoView({behavior:still?"auto":"smooth",block:"start"});});
   document.querySelectorAll(".chip").forEach(b=>b.addEventListener("click",()=>{S=b.dataset.s;if(SV){SV=false;history.replaceState(null,"",location.pathname+location.hash);}document.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));renderBoard();}));

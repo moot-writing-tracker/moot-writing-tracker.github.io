@@ -1,13 +1,13 @@
 const CHECKED = "7 November 2026";
 const ITEMS = [
-/* ---------------- WRITING ---------------- */
+/* ---------------- WRITING (t:"w") and JOURNAL SUBMISSIONS (t:"j") ---------------- */
 {t:"w",name:"Albert S. Pergam International Law Writing Competition",about:"A law review style article on public or private international law, comparative law, or international legal practice. You choose the topic.",org:"New York State Bar Association, International Section",area:"International law",state:"open",src:"official",
  dates:[{l:"Submission deadline (4 pm EST)",d:"2026-11-25"}],
  who:"Current JD, LLM or PhD law students anywhere. No more than three years as a licensed attorney.",
  prize:"USD 2,000 and publication in the New York International Law Review.",
  note:"The official call gives 25 November, not 20 November. Up to 20,000 words, Bluebook. Email the article to cforgea@nysba.org with proof of enrolment and a CV.",
  link:"https://nysba.org/awards-competitions/international-section-albert-s-pergam-international-law-writing-competition-award/"},
-{t:"w",name:"Cambridge Law Review: Call for Submissions, Volume 12, Issue 1",about:"A student-run journal at the University of Cambridge. Submit an article or case comment on a contemporary legal issue in English, EU or international law, or a comparative piece involving English law. Interdisciplinary work, such as technology regulation, is welcome.",org:"Cambridge Law Review, University of Cambridge",area:"Journal submission",state:"open",src:"official",
+{t:"j",name:"Cambridge Law Review: Call for Submissions, Volume 12, Issue 1",about:"A student-run journal at the University of Cambridge. Submit an article or case comment on a contemporary legal issue in English, EU or international law, or a comparative piece involving English law. Interdisciplinary work, such as technology regulation, is welcome.",org:"Cambridge Law Review, University of Cambridge",area:"Journal submission",state:"open",src:"official",
  dates:[{l:"Submission deadline (23:59 UK time)",d:"2026-12-20"},{l:"Volume 12, Issue 1 published",d:"2027-04-01",approx:"Spring 2027"}],
  who:"Students, academics and practitioners. Work must be unpublished, except on a personal blog or SSRN, and not under review elsewhere.",
  prize:"Publication in Volume 12, Issue 1. No cash prize.",
