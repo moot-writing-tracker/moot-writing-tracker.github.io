@@ -1,4 +1,4 @@
-const CHECKED = "2 November 2026";
+const CHECKED = "7 November 2026";
 const ITEMS = [
 /* ---------------- WRITING ---------------- */
 {t:"w",name:"Albert S. Pergam International Law Writing Competition",about:"A law review style article on public or private international law, comparative law, or international legal practice. You choose the topic.",org:"New York State Bar Association, International Section",area:"International law",state:"open",src:"official",
@@ -13,6 +13,12 @@ const ITEMS = [
  prize:"USD 3,000, Wolters Kluwer books, up to USD 1,500 travel, publication in ITA in Review.",
  note:"Any topic in international commercial or investment arbitration. Email ita@cailaw.org.",
  link:"https://www.cailaw.org/Institute-for-Transnational-Arbitration/Young-ITA/writing-competition.html"},
+{t:"w",name:"ATRIP Essay Competition for Young Researchers in Intellectual Property Law",about:"An original research essay on any question of intellectual property law. You choose the topic.",org:"International Association for the Advancement of Teaching and Research in Intellectual Property (ATRIP), sponsored by FICPI",area:"Intellectual property",state:"open",src:"official",
+ dates:[{l:"Essay due",d:"2027-02-05"}],
+ who:"Young scholars aged 35 or younger on 31 December 2026.",
+ prize:"First, second and third prizes. The winner presents at the next ATRIP Congress and gets a chance at publication in The Journal of World Intellectual Property and IIC, subject to review.",
+ note:"5,000 to 10,000 words, footnotes included. Follow the ATRIP Essay Competition Ethical Code.",
+ link:"https://atrip.org/competitions-and-prizes/"},
 {t:"w",name:"UNCITRAL 60 Global Essay Competition",about:"Theme: From Foundations to Frontiers, UNCITRAL's Role in Shaping Tomorrow's Trade Law. Essays look at the social and economic impact of UNCITRAL texts or propose ideas for the future of international trade law. Work that mixes law with economics or technology is welcome.",org:"UN Commission on International Trade Law",area:"Trade law",state:"open",src:"official",
  dates:[{l:"Essay due before 31 December",d:"2026-12-30"},{l:"Winners present in Vienna",d:"2027-06-15",approx:"June or July 2027"}],
  who:"Researchers at any career stage. Students qualify only if in, or done with, a research master's or PhD in law. A university or research institution must endorse the essay.",
