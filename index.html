@@ -126,6 +126,14 @@ tr.row.open td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
 .tm.ok b{color:var(--up);box-shadow:inset 0 0 0 1.5px var(--up)}
 .tm.set b{color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
 .mm{font-size:16px;white-space:nowrap}
+.topics{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 14px}
+.topics .tl{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-right:6px}
+.tchip{border:1px solid #1877f2;background:#fff;color:#1877f2;font:inherit;font-size:15px;font-weight:600;padding:4px 12px;border-radius:4px;cursor:pointer}
+.tchip[aria-pressed="true"]{background:#1877f2;color:#fffafa}
+.tm b.any{font-size:19px;padding:6px 8px;line-height:1.1;white-space:nowrap}
+.tchip span{font-weight:500;opacity:.8;margin-left:4px}
+.jt{white-space:normal;font-size:14px;line-height:1.35;color:var(--muted);display:block;max-width:240px}
+.jt b{color:var(--ink);font-weight:600;display:block;font-size:15px}
 .mm.set{color:var(--accent);font-weight:600}
 .mml{display:block;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
 @media (max-width:700px){.mml{display:none}}
@@ -270,7 +278,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
     <div class="asof"><span>Today <b id="today"></b></span><span>Dates last checked <b id="checked"></b></span></div>
   </header>
   <nav class="tabs" aria-label="Collection">
-    <a href="#moots" data-t="m">Moots <span id="n-m"></span></a>
+    <a href="#moots" data-t="m">Moot Competitions <span id="n-m"></span></a>
     <a href="#writing" data-t="w">Writing Competitions <span id="n-w"></span></a>
     <a href="#journals" data-t="j">Journal Submissions <span id="n-j"></span></a>
   </nav>
@@ -299,6 +307,8 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
     <input type="search" id="q" placeholder="Search name, topic or organiser" aria-label="Search">
     <span class="count" id="count"></span>
   </div>
+
+  <div class="topics" id="topics" role="group" aria-label="Journal topics" hidden></div>
 
   <div class="listbar" id="listbar" hidden></div>
 
@@ -345,7 +355,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
   </section>
 </div>
 
-<script src="data.js?v=202611071524"></script>
+<script src="data.js?v=202611071646"></script>
 <script>
 (function(){
   const MS=86400000, today=new Date(); today.setHours(0,0,0,0);
@@ -363,18 +373,19 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
     const fut=it.dates.filter(x=>days(x.d)>=0).sort((a,b)=>a.d<b.d?-1:1);
     it.nextD=fut[0]||null;
     let s=it.state;
-    if((s==="open"||s==="upcoming")&&!fut.length) s="closed";
+    if(it.rolling&&s==="open") s="rolling";
+    else if((s==="open"||s==="upcoming")&&!fut.length) s="closed";
     if(s==="open"&&it.nextD&&days(it.nextD.d)<=21) s="soon";
     it.s=s;
-    it.group=s==="open"||s==="soon"?"open":s==="upcoming"?"up":s==="closed"?"closed":"exp";
+    it.group=s==="open"||s==="soon"||s==="rolling"?"open":s==="upcoming"?"up":s==="closed"?"closed":"exp";
     it.id=slug(it.name);
   });
-  const LABEL={open:["Open","var(--up)"],soon:["Closing soon","var(--red)"],upcoming:["Dates set","var(--accent)"],expected:["Expected","var(--off)"],closed:["Closed","var(--off)"],unknown:["No call yet","var(--off)"]};
+  const LABEL={rolling:["Rolling","var(--up)"],open:["Open","var(--up)"],soon:["Closing soon","var(--red)"],upcoming:["Dates set","var(--accent)"],expected:["Expected","var(--off)"],closed:["Closed","var(--off)"],unknown:["No call yet","var(--off)"]};
   const SRC={official:["Checked on official page","var(--up)"],listing:["Checked on a listing site","var(--warn)"],calendar:["Not yet confirmed online","var(--off)"]};
 
   const fromHash=()=>location.hash==="#writing"?"w":location.hash==="#journals"?"j":"m";
-  const TN={m:"Moots",w:"Writing competitions",j:"Journal submissions"}, HASH={m:"#moots",w:"#writing",j:"#journals"};
-  let T=fromHash(), S="all", Q="", SORT=null, DIR="asc", Y=today.getFullYear();
+  const TN={m:"Moot competitions",w:"Writing competitions",j:"Journal submissions"}, HASH={m:"#moots",w:"#writing",j:"#journals"};
+  let TP="any", T=fromHash(), S="all", Q="", SORT=null, DIR="asc", Y=today.getFullYear();
   const OPEN=new Set();
   const view=()=>ITEMS.filter(i=>i.t===T);
   const short=n=>n.replace(/\s*\(.*?\)\s*/g," ").replace(/ International| Competition| Moot Court| Writing| Essay/g,"").trim();
@@ -422,7 +433,8 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
     document.getElementById("n-w").textContent=ITEMS.filter(i=>i.t==="w").length;
     document.getElementById("n-j").textContent=ITEMS.filter(i=>i.t==="j").length;
     document.querySelectorAll(".tabs a").forEach(a=>a.setAttribute("aria-current",a.dataset.t===T?"page":"false"));
-    document.getElementById("col5").textContent=T==="m"?"Memorial / Orals":"Area";
+    document.getElementById("col5").textContent=T==="m"?"Memorial / Orals":T==="j"?"Region / Topics":"Area";
+    renderTopics();
     document.getElementById("colname").textContent=T==="j"?"Journal":"Competition";
   }
 
@@ -469,7 +481,8 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
   }
   function renderBoard(){
     let rows=SV?view().filter(i=>SHARED.has(code(i.name))):view().filter(i=>S==="all"||(S==="mine"?mine[i.name]:i.group===S));
-    if(Q){const q=Q.toLowerCase();rows=rows.filter(i=>(i.name+" "+i.org+" "+i.area+" "+(i.about||"")).toLowerCase().includes(q));}
+    if(T==="j"&&TP!=="any") rows=rows.filter(i=>(i.topics||[]).includes(TP));
+    if(Q){const q=Q.toLowerCase();rows=rows.filter(i=>(i.name+" "+i.org+" "+i.area+" "+(i.topics||[]).join(" ")+" "+(i.about||"")).toLowerCase().includes(q));}
     const rank={open:0,up:1,exp:2,closed:3};
     const byDate=(a,b)=>(a.nextD?a.nextD.d:"9999")<(b.nextD?b.nextD.d:"9999")?-1:(a.nextD?a.nextD.d:"9999")>(b.nextD?b.nextD.d:"9999")?1:0;
     if(SORT==="name") rows.sort((a,b)=>a.name.localeCompare(b.name));
@@ -491,14 +504,15 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
       if(it.t==="m"){
         const st=stage(it); lab=st.lab;
         c5=st.txt?`<span class="mm ${st.set?"set":"est"}"><small class="mml">${st.lab}</small>${esc(st.txt)}</span>`:`<span class="mm est">Not announced</span>`;
-      } else c5=`<span class="mm">${esc(it.area)}</span>`;
+      } else if(it.t==="j") c5=`<span class="jt"><b>${esc(it.area)}</b>${esc((it.topics||[]).join(", "))}</span>`;
+      else c5=`<span class="mm">${esc(it.area)}</span>`;
       const open=OPEN.has(it.id);
       return `<tr class="row ${it.t}${open?" open":""}" id="${it.id}" data-id="${it.id}" tabindex="0" aria-expanded="${open}">
         <td class="c-st"><span class="st${lc==="var(--red)"?" red":""}" style="--c:${lc}"><i></i>${lt}</span></td>
         <td class="c-nm nm"><b>${esc(it.name)}</b><small>${esc(it.org)}</small></td>
         <td class="c-nx nx">${nextLabel(it)}</td>
         <td class="c-dt dt num">${it.nextD?(it.nextD.approx||fmt(it.nextD.d)):"--"}</td>
-        <td class="c-tm tm r ${tcls}">${n===null?`<b class="num">--</b><small>No date</small>`:`<b class="num">${n}</b><small>${n===1?"day":"days"}</small>`}</td>
+        <td class="c-tm tm r ${tcls}">${n===null?(it.s==="rolling"?`<b class="any">Any time</b><small>Rolling</small>`:`<b class="num">--</b><small>No date</small>`):`<b class="num">${n}</b><small>${n===1?"day":"days"}</small>`}</td>
         <td class="c-mm" data-lab="${lab}">${c5}</td>
         <td class="c-ar"><button class="rsave star" data-k="${esc(it.name)}" aria-pressed="${!!mine[it.name]}" aria-label="${mine[it.name]?"Remove from my list":"Save to my list"}">${mine[it.name]?"★ Saved":"☆ Save"}</button><span class="ar">›</span></td>
       </tr>${open?detail(it):""}`;
@@ -511,10 +525,11 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
     if(it.t==="m"){const m=findEv(it,MEMO),n=findEv(it,NAT);
       facts=`<dt>Memorial</dt><dd>${m?esc(m.txt):"Date not announced"}</dd>`;
       if(n||it.nat) facts+=`<dt>National round</dt><dd>${esc(n&&n.set?n.txt:(it.nat||n.txt))}</dd>`;}
+    if(it.t==="j") facts+=`<dt>Region</dt><dd>${esc(it.area)}</dd><dt>Topics</dt><dd>${esc((it.topics||[]).join(", "))}</dd>`;
     const [st,sc]=SRC[it.src]; const on=!!mine[it.name];
     return `<tr class="det"><td colspan="7"><div class="dgrid">
       <div>${it.about?`<p class="about">${esc(it.about)}</p>`:""}
-        <dl class="dl2">${facts}${it.who?`<dt>Eligibility</dt><dd>${esc(it.who)}</dd>`:""}${it.prize?`<dt>Prize</dt><dd>${esc(it.prize)}</dd>`:""}${it.note?`<dt>Notes</dt><dd>${esc(it.note)}</dd>`:""}</dl>
+        <dl class="dl2">${facts}${it.who?`<dt>Eligibility</dt><dd>${esc(it.who)}</dd>`:""}${it.prize?`<dt>${it.t==="j"?"Publication":"Prize"}</dt><dd>${esc(it.prize)}</dd>`:""}${it.note?`<dt>Notes</dt><dd>${esc(it.note)}</dd>`:""}</dl>
         <div class="dfoot">${it.link?`<a href="${esc(it.link)}" target="_blank" rel="noopener">Official page ↗</a>`:""}<span class="src" style="--c:${sc}">${st}</span><button class="star" data-k="${esc(it.name)}" aria-pressed="${on}">${on?"On my list":"Add to my list"}</button>${upDates(it).length?`<button class="calbtn" data-ics="${esc(it.name)}">Add dates to calendar</button>`:""}</div>
       </div>
       <div><h4>Key dates</h4><ul class="kd">${dl||""}${exp}</ul>${!dl&&!exp&&it.expect?`<p class="exp">${esc(it.expect)}</p>`:""}${(dl||exp)&&it.expect?`<p class="exp">${esc(it.expect)}</p>`:""}</div>
@@ -661,6 +676,16 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
   function stillTrace(){for(let i=0;i<buf.length;i++)buf[i]=H*.62+beat((i/90)%1);x=buf.length-1;draw();}
   function pulseNote(){const r=bpm();document.getElementById("pulsenote").textContent=r>=110?"Deadline within a week":r>=92?"Deadline within three weeks":"Steady";}
 
+  const TOPICS=["General", "Space and Aviation", "Technology, AI and Data", "Intellectual Property", "Arbitration and ADR", "Telecom and Media", "International Law", "Human Rights", "Constitutional and Administrative", "Criminal Law and Evidence", "Private and Commercial", "Land and Property", "Family Law", "Tax Law", "Labour Law", "History, Development and Profession", "Environment and Climate", "Energy, Oil and Gas", "Health Law", "Gender and the Law", "Refugee and Migration", "Sports Law", "Competition Law", "African Trade and Integration"];
+  function renderTopics(){
+    const box=document.getElementById("topics");
+    if(T!=="j"){box.hidden=true;return;}
+    box.hidden=false;
+    const J=ITEMS.filter(i=>i.t==="j"), c=tp=>J.filter(i=>(i.topics||[]).includes(tp)).length;
+    box.innerHTML=`<span class="tl">Topic</span><button class="tchip" data-tp="any" aria-pressed="${TP==="any"}">All topics<span>${J.length}</span></button>`+
+      TOPICS.map(tp=>`<button class="tchip" data-tp="${esc(tp)}" aria-pressed="${TP===tp}">${tp==="General"?"General (any topic)":esc(tp)}<span>${c(tp)}</span></button>`).join("");
+  }
+  document.addEventListener("click",e=>{const b=e.target.closest(".tchip");if(!b)return;TP=b.dataset.tp;renderTopics();renderBoard();});
   function all(){header();ticker();kpis();renderYear();renderBoard();renderBusy();renderCal();pulseNote();}
 
   /* events */
