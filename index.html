@@ -355,7 +355,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
   </section>
 </div>
 
-<script src="data.js?v=202611071652"></script>
+<script src="data.js?v=202611071704"></script>
 <script>
 (function(){
   const MS=86400000, today=new Date(); today.setHours(0,0,0,0);
@@ -529,7 +529,7 @@ footer{font-size:15px;color:var(--muted);padding-bottom:48px}
     const [st,sc]=SRC[it.src]; const on=!!mine[it.name];
     return `<tr class="det"><td colspan="7"><div class="dgrid">
       <div>${it.about?`<p class="about">${esc(it.about)}</p>`:""}
-        <dl class="dl2">${facts}${it.who?`<dt>Eligibility</dt><dd>${esc(it.who)}</dd>`:""}${it.prize?`<dt>${it.t==="j"?"Publication":"Prize"}</dt><dd>${esc(it.prize)}</dd>`:""}${it.note?`<dt>Notes</dt><dd>${esc(it.note)}</dd>`:""}</dl>
+        <dl class="dl2">${facts}${it.who?`<dt>Eligibility</dt><dd>${esc(it.who)}</dd>`:""}${it.prize?`<dt>${it.t==="j"?"Publication":"Prize"}</dt><dd>${esc(it.prize)}</dd>`:""}${it.note?`<dt>Notes</dt><dd>${esc(it.note).replace(/\n/g,"<br>")}${it.t==="j"&&it.link&&!it.nosite?`<br>Visit the website for more details: <a href="${esc(it.link)}" target="_blank" rel="noopener">${esc(it.link.replace(/^https?:\/\//,"").replace(/\/$/,""))}</a>`:""}</dd>`:""}</dl>
         <div class="dfoot">${it.link?`<a href="${esc(it.link)}" target="_blank" rel="noopener">Official page ↗</a>`:""}<span class="src" style="--c:${sc}">${st}</span><button class="star" data-k="${esc(it.name)}" aria-pressed="${on}">${on?"On my list":"Add to my list"}</button>${upDates(it).length?`<button class="calbtn" data-ics="${esc(it.name)}">Add dates to calendar</button>`:""}</div>
       </div>
       <div><h4>Key dates</h4><ul class="kd">${dl||""}${exp}</ul>${!dl&&!exp&&it.expect?`<p class="exp">${esc(it.expect)}</p>`:""}${(dl||exp)&&it.expect?`<p class="exp">${esc(it.expect)}</p>`:""}</div>
