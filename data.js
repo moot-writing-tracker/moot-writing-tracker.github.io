@@ -117,6 +117,10 @@ const ITEMS = [
  who:"Current JD, LLM or SJD students at any law school worldwide. You do not need to study at Georgetown.",
  prize:"USD 2,000 and publication in the Georgetown Journal of International Law for first place. USD 1,500 for second place, USD 1,000 for third place.",
  note:"25 to 35 pages, double spaced, Times New Roman 12 point, with a 1 to 4 page summary. One .docx submission per author. Email your note to LawIIEL@georgetown.edu. An editorial panel reviews each note to GJIL standards, then a faculty committee reviews it blind. The call opens each November.",
+ winners:{year:"2026",moreYears:"2020 to 2025",more:"https://www.law.georgetown.edu/iiel/student-opportunities-2/extracurricular-opportunities/john-d-greenwald-writing-competition/",list:[
+  {place:"First place",name:"Navin Rana",title:"Mining for Exceptions: Addressing TRIPS and the Copyright Infringement of Generative AI Training",url:"https://georgetown.box.com/s/o21ky8c5l969n2s3arn7h3x8t7hikqvu"},
+  {place:"Second place",name:"Carly Kabot",title:"Preventing Critical Minerals From Becoming The Next Resource Development Trap: The Role Of International Economic Institutions",url:"https://georgetown.box.com/s/i1sadp6e1poa502381ghb5vcvyq4e12u"},
+  {place:"Third place",name:"Luke Dykowski",title:"By Any Other Name? The U.S. Steel ‘Golden Share’ and State Enterprise Disciplines Under International Trade Agreements",url:"https://georgetown.box.com/s/y5nsw1p2q7rb6ikqli2i374xv5arykkk"}]},
  link:"https://www.law.georgetown.edu/iiel/student-opportunities-2/extracurricular-opportunities/john-d-greenwald-writing-competition/"},
 {t:"w",name:"Young ITA Writing Competition: New Voices in International Arbitration",about:"An original paper on any issue in international commercial or investment arbitration, from procedure and enforcement to new technology in arbitration.",org:"Young ITA and the Institute for Transnational Arbitration",area:"Arbitration",state:"open",src:"official",
  dates:[{l:"Paper due (midnight EST)",d:"2027-01-15"},{l:"Award at ITA Workshop, Texas",d:"2027-06-01",approx:"June 2027"}],
